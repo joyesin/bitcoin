@@ -72,7 +72,12 @@ void HandleSIGTERM(int)
 //
 
 #ifndef GUI
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+extern "C" int bitcoinmain(int argc, char* argv[]);
+int bitcoinmain(int argc, char* argv[])
+#else
 int main(int argc, char* argv[])
+#endif
 {
     bool fRet = false;
     fRet = AppInit(argc, argv);
@@ -227,6 +232,7 @@ bool AppInit2(int argc, char* argv[])
     }
 
 #ifndef GUI
+#if !(TARGET_OS_IPHONE  || TARGET_IPHONE_SIMULATOR) // no fork on iPhone. Use thread instead
     if (fDaemon)
     {
         // Daemonize
@@ -238,11 +244,11 @@ bool AppInit2(int argc, char* argv[])
         }
         if (pid > 0)
             return true;
-
         pid_t sid = setsid();
         if (sid < 0)
             fprintf(stderr, "Error: setsid() returned %d errno %d\n", sid, errno);
     }
+#endif
 #endif
 
     if (!fDebug && !pszSetDataDir[0])
@@ -304,6 +310,7 @@ bool AppInit2(int argc, char* argv[])
     }
 #endif
 
+#if !(TARGET_OS_IPHONE  || TARGET_IPHONE_SIMULATOR) // on iphone there will be at most just one process
     // Make sure only a single bitcoin process is using the data directory.
     string strLockFile = GetDataDir() + "/.lock";
     FILE* file = fopen(strLockFile.c_str(), "a"); // empty lock file; created if it doesn't exist.
@@ -314,7 +321,7 @@ bool AppInit2(int argc, char* argv[])
         wxMessageBox(strprintf(_("Cannot obtain a lock on data directory %s.  Bitcoin is probably already running."), GetDataDir().c_str()), "Bitcoin");
         return false;
     }
-
+#endif
     // Bind to the port early so we can tell if another instance is already running.
     string strErrors;
     if (!fNoListen)

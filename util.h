@@ -25,7 +25,6 @@ typedef unsigned long long  uint64;
 #define UEND(a)             ((unsigned char*)&((&(a))[1]))
 #define ARRAYLEN(array)     (sizeof(array)/sizeof((array)[0]))
 #define printf              OutputDebugStringF
-
 #ifdef snprintf
 #undef snprintf
 #endif
