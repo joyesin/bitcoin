@@ -232,8 +232,11 @@ bool AppInit2(int argc, char* argv[])
     }
 
 #ifndef GUI
-#if !(TARGET_OS_IPHONE  || TARGET_IPHONE_SIMULATOR) // no fork on iPhone. Use thread instead
+#if TARGET_OS_IPHONE  || TARGET_IPHONE_SIMULATOR // no fork on iPhone. Use thread instead
     if (fDaemon)
+#else
+    if (0)
+#endif
     {
         // Daemonize
         pid_t pid = fork();
@@ -248,7 +251,6 @@ bool AppInit2(int argc, char* argv[])
         if (sid < 0)
             fprintf(stderr, "Error: setsid() returned %d errno %d\n", sid, errno);
     }
-#endif
 #endif
 
     if (!fDebug && !pszSetDataDir[0])

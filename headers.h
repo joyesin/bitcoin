@@ -132,7 +132,7 @@ using namespace boost;
 #include "noui.h"
 #endif
 #include "init.h"
-
+#if !(TARGET_OS_IPHONE  || TARGET_IPHONE_SIMULATOR)
 #include "xpm/addressbook16.xpm"
 #include "xpm/addressbook20.xpm"
 #include "xpm/bitcoin16.xpm"
@@ -145,3 +145,4 @@ using namespace boost;
 #include "xpm/send16noshadow.xpm"
 #include "xpm/send20.xpm"
 #include "xpm/about.xpm"
+#endif
