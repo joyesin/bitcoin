@@ -233,9 +233,9 @@ bool AppInit2(int argc, char* argv[])
 
 #ifndef GUI
 #if TARGET_OS_IPHONE  || TARGET_IPHONE_SIMULATOR // no fork on iPhone. Use thread instead
-    if (fDaemon)
-#else
     if (0)
+#else
+    if (fDaemon)
 #endif
     {
         // Daemonize
