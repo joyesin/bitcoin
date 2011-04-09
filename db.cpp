@@ -72,7 +72,9 @@ CDB::CDB(const char* pszFile, const char* pszMode) : pdb(NULL)
             dbenv.set_flags(DB_AUTO_COMMIT, 1);
             ret = dbenv.open(strDataDir.c_str(),
                              DB_CREATE     |
+#if !(TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR)
                              DB_INIT_LOCK  |
+#endif
                              DB_INIT_LOG   |
                              DB_INIT_MPOOL |
                              DB_INIT_TXN   |
