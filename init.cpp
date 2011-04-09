@@ -45,7 +45,11 @@ void Shutdown(void* parg)
         Sleep(50);
         printf("Bitcoin exiting\n\n");
         fExit = true;
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+        ExitThread(0);
+#else
         exit(0);
+#endif
     }
     else
     {
