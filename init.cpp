@@ -41,6 +41,7 @@ void Shutdown(void* parg)
         DBFlush(false);
         StopNode();
         DBFlush(true);
+        boost::filesystem::remove(GetPidFile());
         CreateThread(ExitTimeout, NULL);
         Sleep(50);
         printf("Bitcoin exiting\n\n");
@@ -152,7 +153,7 @@ bool AppInit2(int argc, char* argv[])
     {
         string beta = VERSION_IS_BETA ? _(" beta") : "";
         string strUsage = string() +
-          _("Bitcoin version") + " " + FormatVersion(VERSION) + pszSubVer + beta + "\n\n" +
+          _("Bitcoin version") + " " + FormatFullVersion() + "\n\n" +
           _("Usage:") + "\t\t\t\t\t\t\t\t\t\t\n" +
             "  bitcoin [options]                   \t  " + "\n" +
             "  bitcoin [options] <command> [params]\t  " + _("Send command to -server or bitcoind\n") +
@@ -160,6 +161,7 @@ bool AppInit2(int argc, char* argv[])
             "  bitcoin [options] help <command>    \t\t  " + _("Get help for a command\n") +
           _("Options:\n") +
             "  -conf=<file>     \t\t  " + _("Specify configuration file (default: bitcoin.conf)\n") +
+            "  -pid=<file>      \t\t  " + _("Specify pid file (default: bitcoind.pid)\n") +
             "  -gen             \t\t  " + _("Generate coins\n") +
             "  -gen=0           \t\t  " + _("Don't generate coins\n") +
             "  -min             \t\t  " + _("Start minimized\n") +
@@ -264,7 +266,10 @@ bool AppInit2(int argc, char* argv[])
             return false;
         }
         if (pid > 0)
+        {
+            CreatePidFile(GetPidFile(), pid);
             return true;
+        }
         pid_t sid = setsid();
         if (sid < 0)
             fprintf(stderr, "Error: setsid() returned %d errno %d\n", sid, errno);
@@ -274,7 +279,7 @@ bool AppInit2(int argc, char* argv[])
     if (!fDebug && !pszSetDataDir[0])
         ShrinkDebugFile();
     printf("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
-    printf("Bitcoin version %s%s%s\n", FormatVersion(VERSION).c_str(), pszSubVer, VERSION_IS_BETA ? _(" beta") : "");
+    printf("Bitcoin version %s\n", FormatFullVersion().c_str());
 #ifdef GUI
     printf("OS version %s\n", ((string)wxGetOsDescription()).c_str());
     printf("System default language is %d %s\n", g_locale.GetSystemLanguage(), ((string)g_locale.GetSysName()).c_str());
