@@ -66,8 +66,10 @@ CDB::CDB(const char* pszFile, const char* pszMode) : pdb(NULL)
 
             dbenv.set_lg_dir(strLogDir.c_str());
             dbenv.set_lg_max(10000000);
+#if !(TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR)
             dbenv.set_lk_max_locks(10000);
             dbenv.set_lk_max_objects(10000);
+#endif
             dbenv.set_errfile(fopen(strErrorFile.c_str(), "a")); /// debug
             dbenv.set_flags(DB_AUTO_COMMIT, 1);
             ret = dbenv.open(strDataDir.c_str(),
