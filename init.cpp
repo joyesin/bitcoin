@@ -46,9 +46,7 @@ void Shutdown(void* parg)
         Sleep(50);
         printf("Bitcoin exiting\n\n");
         fExit = true;
-#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
-       // ExitThread(0);
-#else
+#if !(TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR)
         exit(0);
 #endif
     }
@@ -508,17 +506,36 @@ bool AppInit2(int argc, char* argv[])
     if (!CreateThread(StartNode, NULL))
         wxMessageBox("Error: CreateThread(StartNode) failed", "Bitcoin");
 
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+    pthread_t rpcthread = 0;
+    if (fServer)
+        rpcthread = CreateThread(ThreadRPCServer, NULL, true);
+#else
     if (fServer)
         CreateThread(ThreadRPCServer, NULL);
-
+#endif
 #if defined(__WXMSW__) && defined(GUI)
     if (fFirstRun)
         SetStartOnSystemStartup(true);
 #endif
 
 #ifndef GUI
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+    while (1) {
+        Sleep(1000);
+        if (fShutdown && vnThreadsRunning[0] <= 0 && vnThreadsRunning[2] <= 0 && vnThreadsRunning[3] <= 0 && vnThreadsRunning[4] <= 0
+#ifdef USE_UPNP
+            && vnThreadsRunning[5] <= 0
+#endif
+            ) {
+            pthread_cancel(rpcthread); //pthread_kill(rpcthread,SIGUSR1);
+            break;
+        }
+    }
+#else
     while (1)
         Sleep(5000);
+#endif
 #endif
 
     return true;
