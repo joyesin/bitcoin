@@ -4081,6 +4081,15 @@ string SendMoney(CScript scriptPubKey, int64 nValue, CWalletTx& wtxNew, bool fAs
         return _("Error: The transaction was rejected.  This might happen if some of the coins in your wallet were already spent, such as if you used a copy of wallet.dat and coins were spent in the copy but not marked as spent here.");
 
     MainFrameRepaint();
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+    if (nFeeRequired >= CENT && nFeeRequired > nTransactionFee)
+        return strprintf(
+                                  _("The transaction was over the size limit.  A fee of %s was added, "
+                                    "which goes to the nodes that process your transaction and helps to support the network.  "
+                                    ),
+                                  FormatMoney(nFeeRequired).c_str());
+#endif
+
     return "";
 }
 

@@ -486,11 +486,7 @@ Value sendtoaddress(const Array& params, bool fHelp)
 
     CRITICAL_BLOCK(cs_main)
     {
-#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
-        string strError = SendMoneyToBitcoinAddress(strAddress, nAmount, wtx, true);
-#else
         string strError = SendMoneyToBitcoinAddress(strAddress, nAmount, wtx);
-#endif
         if (strError != "")
             throw JSONRPCError(-4, strError);
     }
