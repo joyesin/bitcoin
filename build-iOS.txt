@@ -62,7 +62,7 @@ open three20/samples/TTTwitter/TTTwitter.xcodeproj
 ===========================
 = Add bitcoin.org project =
 ===========================
-git clone git@github.com:udibr/bitcoinApp.git bitcoin.org
+git clone git@github.com:udibr/bitcoin.git bitcoin.org
 # any changes I made are surronded by "#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR"
 
 ===============
