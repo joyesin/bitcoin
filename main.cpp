@@ -4056,7 +4056,48 @@ bool CommitTransaction(CWalletTx& wtxNew, CReserveKey& reservekey)
 }
 
 
-
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+// requires cs_main lock
+string CheckSendMoney(CScript scriptPubKey, int64 nValue, CWalletTx& wtxNew)
+{
+    CReserveKey reservekey;
+    int64 nFeeRequired;
+    if (!CreateTransaction(scriptPubKey, nValue, wtxNew, reservekey, nFeeRequired))
+    {
+        string strError;
+        if (nValue + nFeeRequired > GetBalance())
+            strError = strprintf(_("Error: This transaction requires a transaction fee of at least %s because of its amount, complexity, or use of recently received funds  "), FormatMoney(nFeeRequired).c_str());
+        else
+            strError = _("Error: Transaction creation failed  ");
+        printf("AskSendMoney() : %s", strError.c_str());
+        return strError;
+    }
+    
+    if (nFeeRequired >= CENT && nFeeRequired > nTransactionFee)
+        return strprintf(
+                         _("This transaction is over the size limit.  You can still send it for a fee of %s, "
+                           "which goes to the nodes that process your transaction and helps to support the network.  "
+                           "Do you want to pay the fee?"),
+                         FormatMoney(nFeeRequired).c_str());
+    return "";
+}
+// requires cs_main lock
+string CheckSendMoneyToBitcoinAddress(string strAddress, int64 nValue, CWalletTx& wtxNew)
+{
+    // Check amount
+    if (nValue <= 0)
+        return _("Invalid amount");
+    if (nValue + nTransactionFee > GetBalance())
+        return _("Insufficient funds");
+    
+    // Parse bitcoin address
+    CScript scriptPubKey;
+    if (!scriptPubKey.SetBitcoinAddress(strAddress))
+        return _("Invalid bitcoin address");
+    
+    return CheckSendMoney(scriptPubKey, nValue, wtxNew);
+}
+#endif
 
 // requires cs_main lock
 string SendMoney(CScript scriptPubKey, int64 nValue, CWalletTx& wtxNew, bool fAskFee)
@@ -4081,14 +4122,6 @@ string SendMoney(CScript scriptPubKey, int64 nValue, CWalletTx& wtxNew, bool fAs
         return _("Error: The transaction was rejected.  This might happen if some of the coins in your wallet were already spent, such as if you used a copy of wallet.dat and coins were spent in the copy but not marked as spent here.");
 
     MainFrameRepaint();
-#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
-    if (nFeeRequired >= CENT && nFeeRequired > nTransactionFee)
-        return strprintf(
-                                  _("The transaction was over the size limit.  A fee of %s was added, "
-                                    "which goes to the nodes that process your transaction and helps to support the network.  "
-                                    ),
-                                  FormatMoney(nFeeRequired).c_str());
-#endif
 
     return "";
 }

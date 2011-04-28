@@ -88,6 +88,9 @@ bool CreateTransaction(CScript scriptPubKey, int64 nValue, CWalletTx& wtxNew, CR
 bool CommitTransaction(CWalletTx& wtxNew, CReserveKey& reservekey);
 bool BroadcastTransaction(CWalletTx& wtxNew);
 string SendMoney(CScript scriptPubKey, int64 nValue, CWalletTx& wtxNew, bool fAskFee=false);
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+string CheckSendMoneyToBitcoinAddress(string strAddress, int64 nValue, CWalletTx& wtxNew);
+#endif
 string SendMoneyToBitcoinAddress(string strAddress, int64 nValue, CWalletTx& wtxNew, bool fAskFee=false);
 void GenerateBitcoins(bool fGenerate);
 void ThreadBitcoinMiner(void* parg);

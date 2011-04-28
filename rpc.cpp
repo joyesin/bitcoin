@@ -581,6 +581,37 @@ Value getaddressesbyaccount(const Array& params, bool fHelp)
     return ret;
 }
 
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+Value checksendtoaddress(const Array& params, bool fHelp)
+{
+    if (fHelp || params.size() < 2 || params.size() > 4)
+        throw runtime_error(
+                            "checksendtoaddress <bitcoinaddress> <amount> [comment] [comment-to]\n"
+                            "<amount> is a real and is rounded to the nearest 0.01");
+    
+    string strAddress = params[0].get_str();
+    
+    // Amount
+    int64 nAmount = AmountFromValue(params[1]);
+    
+    // Wallet comments
+    CWalletTx wtx;
+    if (params.size() > 2 && params[2].type() != null_type && !params[2].get_str().empty())
+        wtx.mapValue["comment"] = params[2].get_str();
+    if (params.size() > 3 && params[3].type() != null_type && !params[3].get_str().empty())
+        wtx.mapValue["to"]      = params[3].get_str();
+    
+    CRITICAL_BLOCK(cs_main)
+    {
+        string strError = CheckSendMoneyToBitcoinAddress(strAddress, nAmount, wtx);
+        if (strError != "")
+            throw JSONRPCError(-4, strError);
+    }
+    
+    return wtx.GetHash().GetHex();
+}
+#endif
+
 Value sendtoaddress(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() < 2 || params.size() > 4)
@@ -1535,6 +1566,9 @@ pair<string, rpcfn_type> pCallTable[] =
     make_pair("getlabel",              &getaccount), // deprecated
     make_pair("getaddressesbyaccount", &getaddressesbyaccount),
     make_pair("getaddressesbylabel",   &getaddressesbyaccount), // deprecated
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+    make_pair("checksendtoaddress",         &checksendtoaddress),
+#endif
     make_pair("sendtoaddress",         &sendtoaddress),
     make_pair("getamountreceived",     &getreceivedbyaddress), // deprecated, renamed to getreceivedbyaddress
     make_pair("getallreceived",        &listreceivedbyaddress), // deprecated, renamed to listreceivedbyaddress
@@ -2185,6 +2219,9 @@ int CommandLineRPC(int argc, char *argv[])
         //
         if (strMethod == "setgenerate"            && n > 0) ConvertTo<bool>(params[0]);
         if (strMethod == "setgenerate"            && n > 1) ConvertTo<boost::int64_t>(params[1]);
+#if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
+        if (strMethod == "checksendtoaddress"          && n > 1) ConvertTo<double>(params[1]);
+#endif
         if (strMethod == "sendtoaddress"          && n > 1) ConvertTo<double>(params[1]);
         if (strMethod == "getamountreceived"      && n > 1) ConvertTo<boost::int64_t>(params[1]); // deprecated
         if (strMethod == "getreceivedbyaddress"   && n > 1) ConvertTo<boost::int64_t>(params[1]);
